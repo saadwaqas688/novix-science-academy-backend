@@ -1,0 +1,61 @@
+name: novix-science-academy
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-novix}
+      POSTGRES_USER: ${POSTGRES_USER:-novix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-novix_password}
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-novix} -d ${POSTGRES_DB:-novix}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: postgres://${POSTGRES_USER:-novix}:${POSTGRES_PASSWORD:-novix_password}@db:5432/${POSTGRES_DB:-novix}
+      JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-string}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:4000}
+      ADMIN_NAME: ${ADMIN_NAME:-Academy Admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@novix.pk}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@12345}
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      UPLOAD_DIR: /app/uploads
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    volumes:
+      - uploads:/app/uploads
+
+  # Optional: full stack. Clone the frontend repo next to this one, then run
+  #   docker compose --profile full up -d --build
+  frontend:
+    profiles: ["full"]
+    build:
+      context: ../novix-science-academy-frontend
+      args:
+        NEXT_PUBLIC_API_URL: ${BACKEND_PUBLIC_URL:-http://localhost:4000}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+
+volumes:
+  db_data:
+  uploads:
