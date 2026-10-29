@@ -4,7 +4,7 @@ import { and, asc, eq, gt, sql } from 'drizzle-orm';
 import { db } from '../../db';
 import { books, chapters, notes, subjects, teacherProfile, videos } from '../../db/schema';
 import { badRequest, body, classLevel, idParam, notFound } from '../../lib/http';
-import { fileUrl, removeFile, uploadImage, uploadPdf } from '../../middleware/upload';
+import { discardUpload, removeFile, storeFile, uploadImage, uploadPdf } from '../../middleware/upload';
 
 const r = Router();
 
@@ -27,7 +27,7 @@ r.put('/teacher', async (req, res) => {
 r.post('/teacher/photo', uploadImage, async (req, res) => {
   if (!req.file) throw badRequest('Please choose an image');
   const old = await db.query.teacherProfile.findFirst();
-  const url = fileUrl('photos', req.file.filename);
+  const url = await storeFile('photos', req.file);
   const [row] = await db.update(teacherProfile).set({ photoUrl: url, updatedAt: new Date() }).where(eq(teacherProfile.id, 1)).returning();
   removeFile(old?.photoUrl);
   res.json({ teacher: row });
@@ -104,9 +104,9 @@ r.post('/chapters/:id/notes', uploadPdf('notes'), async (req, res) => {
   const id = idParam(req);
   if (!req.file) throw badRequest('Please choose a PDF file');
   const ch = await db.query.chapters.findFirst({ where: eq(chapters.id, id) });
-  if (!ch) { removeFile(fileUrl('notes', req.file.filename)); throw notFound('Chapter not found'); }
+  if (!ch) { discardUpload(req.file); throw notFound('Chapter not found'); }
   const old = await db.query.notes.findFirst({ where: eq(notes.chapterId, id) });
-  const values = { chapterId: id, fileUrl: fileUrl('notes', req.file.filename), fileName: req.file.originalname, sizeBytes: req.file.size };
+  const values = { chapterId: id, fileUrl: await storeFile('notes', req.file), fileName: req.file.originalname, sizeBytes: req.file.size };
   const [row] = await db.insert(notes).values(values).onConflictDoUpdate({ target: notes.chapterId, set: { ...values, createdAt: new Date() } }).returning();
   removeFile(old?.fileUrl);
   res.json({ notes: row });
@@ -141,7 +141,7 @@ r.post('/books', uploadPdf('books'), async (req, res) => {
   const d = body(req, z.object({ subjectSlug: z.string(), classLevel }));
   const s = await subjectBySlug(d.subjectSlug);
   const old = await db.query.books.findFirst({ where: and(eq(books.subjectId, s.id), eq(books.classLevel, d.classLevel)) });
-  const values = { subjectId: s.id, classLevel: d.classLevel, fileUrl: fileUrl('books', req.file.filename), fileName: req.file.originalname, sizeBytes: req.file.size };
+  const values = { subjectId: s.id, classLevel: d.classLevel, fileUrl: await storeFile('books', req.file), fileName: req.file.originalname, sizeBytes: req.file.size };
   const [row] = await db.insert(books).values(values).onConflictDoUpdate({ target: [books.subjectId, books.classLevel], set: { ...values, createdAt: new Date() } }).returning();
   removeFile(old?.fileUrl);
   res.json({ book: row });

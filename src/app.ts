@@ -2,7 +2,10 @@ import express, { Router } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { eq } from 'drizzle-orm';
 import { config } from './config';
+import { db } from './db';
+import { files } from './db/schema';
 import { requireAdmin } from './middleware/auth';
 import { errorHandler, notFoundHandler } from './middleware/error';
 import authRoutes from './routes/auth';
@@ -24,6 +27,22 @@ export function createApp() {
   // uploaded PDFs and photos
   app.use('/uploads', express.static(config.uploadDir, { maxAge: '7d', fallthrough: false }));
 
+  // uploaded files stored in the database (FILE_STORAGE=db)
+  app.get('/files/:id{/:name}', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) { res.status(404).end(); return; }
+    const [f] = await db.select().from(files).where(eq(files.id, id));
+    if (!f) { res.status(404).json({ error: { message: 'File not found', code: 'NOT_FOUND' } }); return; }
+    res.set({
+      'Content-Type': f.mimeType,
+      'Content-Length': String(f.data.length),
+      'Content-Disposition': `inline; filename="${f.fileName.replace(/[^\w.\- ]/g, '_')}"`,
+      'Cache-Control': 'public, max-age=604800, immutable',
+    });
+    res.end(f.data);
+  });
+
+  app.get('/', (_req, res) => { res.json({ name: 'Novix Science Academy API', ok: true }); });
   app.get('/health', (_req, res) => { res.json({ ok: true }); });
 
   const api = Router();

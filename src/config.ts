@@ -20,6 +20,8 @@ export const config = {
     email: (process.env.ADMIN_EMAIL || 'admin@novix.pk').toLowerCase(),
     password: process.env.ADMIN_PASSWORD || 'Admin@12345',
   },
+  fileStorage: (process.env.FILE_STORAGE || 'disk').toLowerCase() as 'disk' | 'db',
+  maxDbFileMb: Number(process.env.MAX_DB_FILE_MB || 30),
   seedDemo: (process.env.SEED_DEMO_DATA || 'true').toLowerCase() === 'true',
   isProd: process.env.NODE_ENV === 'production',
 };

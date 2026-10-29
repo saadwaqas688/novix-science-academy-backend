@@ -1,5 +1,5 @@
 import {
-  pgTable, pgEnum, serial, integer, text, timestamp, boolean, jsonb, uniqueIndex, index,
+  customType, pgTable, pgEnum, serial, integer, text, timestamp, boolean, jsonb, uniqueIndex, index,
 } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['student', 'admin']);
@@ -102,5 +102,18 @@ export const attempts = pgTable('attempts', {
   durationSec: integer('duration_sec').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index('attempts_user_idx').on(t.userId), index('attempts_assessment_idx').on(t.assessmentId)]);
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => 'bytea' });
+
+/** Uploaded files when FILE_STORAGE=db (hosts without a persistent disk). */
+export const files = pgTable('files', {
+  id: serial('id').primaryKey(),
+  folder: text('folder').notNull(),
+  fileName: text('file_name').notNull(),
+  mimeType: text('mime_type').notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  data: bytea('data').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
 
 export type User = typeof users.$inferSelect;
