@@ -11,6 +11,7 @@ import { errorHandler, notFoundHandler } from './middleware/error';
 import authRoutes from './routes/auth';
 import publicRoutes from './routes/public';
 import studentRoutes from './routes/student';
+import quizRoutes from './routes/quiz';
 import adminUsers from './routes/admin/users';
 import adminContent from './routes/admin/content';
 import adminAssessments from './routes/admin/assessments';
@@ -57,6 +58,7 @@ export function createApp() {
   admin.use('/', adminStats);
   api.use('/admin', admin);
 
+  api.use('/quiz-results', quizRoutes);
   api.use('/', studentRoutes);
   app.use('/api', api);
 

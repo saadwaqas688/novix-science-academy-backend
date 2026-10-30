@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { db } from '../db';
-import { assessments, attempts, books, chapters, notes, questions, subjects, videos } from '../db/schema';
+import { assessments, attempts, books, chapters, notes, questions, quizResults, subjects, videos } from '../db/schema';
 import { badRequest, body, classLevel, forbidden, idParam, notFound } from '../lib/http';
 import { requireAuth } from '../middleware/auth';
 
@@ -107,17 +107,29 @@ r.get('/me/progress', async (req, res) => {
     .innerJoin(subjects, eq(subjects.id, chapters.subjectId))
     .where(eq(attempts.userId, req.user!.id))
     .orderBy(desc(attempts.createdAt));
+  const qrows = await db.select({
+    id: quizResults.id, quizKey: quizResults.quizKey, score: quizResults.score, total: quizResults.total, durationSec: quizResults.durationSec, createdAt: quizResults.createdAt,
+    topic: quizResults.topic, chapterNumber: quizResults.chapterNumber, chapterTitle: quizResults.chapterTitle, classLevel: quizResults.classLevel,
+    subjectSlug: quizResults.subjectSlug, subjectName: subjects.name, subjectColor: subjects.color, subjectIcon: subjects.icon,
+  }).from(quizResults).leftJoin(subjects, eq(subjects.slug, quizResults.subjectSlug)).where(eq(quizResults.userId, req.user!.id));
+  const all = [
+    ...rows.map((x) => ({ ...x, kind: 'test' as const, quizKey: null as string | null })),
+    ...qrows.map((q) => ({
+      ...q, kind: 'quiz' as const, assessmentId: null as number | null, chapterId: null as number | null,
+      subjectName: q.subjectName ?? q.subjectSlug, subjectColor: q.subjectColor ?? '#0d9488', subjectIcon: q.subjectIcon ?? 'book',
+    })),
+  ].sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
   const pct = (x: { score: number; total: number }) => (x.total ? (x.score / x.total) * 100 : 0);
-  const avg = (l: typeof rows) => (l.length ? Math.round(l.reduce((n, x) => n + pct(x), 0) / l.length) : 0);
+  const avg = (l: { score: number; total: number }[]) => (l.length ? Math.round(l.reduce((n, x) => n + pct(x), 0) / l.length) : 0);
   const allSubjects = await db.select().from(subjects).orderBy(asc(subjects.sortOrder));
   const bySubject = allSubjects.map((s) => {
-    const l = rows.filter((x) => x.subjectSlug === s.slug);
+    const l = all.filter((x) => x.subjectSlug === s.slug);
     return { slug: s.slug, name: s.name, color: s.color, icon: s.icon, count: l.length, average: avg(l) };
   });
   const best = bySubject.filter((x) => x.count).sort((x, y) => y.average - x.average)[0];
   res.json({
-    attempts: rows,
-    summary: { count: rows.length, average: avg(rows), bestSubject: best ? best.name : null, questionsAnswered: rows.reduce((n, x) => n + x.total, 0) },
+    attempts: all,
+    summary: { count: all.length, average: avg(all), bestSubject: best ? best.name : null, questionsAnswered: all.reduce((n, x) => n + x.total, 0) },
     bySubject,
   });
 });

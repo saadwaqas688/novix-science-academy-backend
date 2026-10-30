@@ -116,4 +116,21 @@ export const files = pgTable('files', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Results of quizzes whose questions live in the frontend (public/quizzes/...). */
+export const quizResults = pgTable('quiz_results', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  quizKey: text('quiz_key').notNull(),
+  subjectSlug: text('subject_slug').notNull(),
+  classLevel: text('class_level').notNull(),
+  chapterNumber: integer('chapter_number').notNull(),
+  chapterTitle: text('chapter_title').notNull().default(''),
+  topic: text('topic').notNull(),
+  answers: jsonb('answers').$type<(number | null)[]>().notNull(),
+  score: integer('score').notNull(),
+  total: integer('total').notNull(),
+  durationSec: integer('duration_sec').notNull().default(0),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index('quiz_results_user_idx').on(t.userId), index('quiz_results_key_idx').on(t.quizKey)]);
+
 export type User = typeof users.$inferSelect;
