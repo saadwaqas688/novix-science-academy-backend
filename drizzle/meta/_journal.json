@@ -29,6 +29,13 @@
       "when": 1793343499395,
       "tag": "0003_math10_chapters",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793345490096,
+      "tag": "0004_math9_chapters",
+      "breakpoints": true
     }
   ]
 }

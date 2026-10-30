@@ -18,7 +18,7 @@ export const CHAPTERS: Record<string, Record<string, string[]>> = {
     '10': ['Chemical Equilibrium', 'Acids, Bases and Salts', 'Organic Chemistry', 'Hydrocarbons', 'Biochemistry', 'The Atmosphere', 'Water', 'Chemical Industries'],
   },
   math: {
-    '9': ['Matrices and Determinants', 'Real and Complex Numbers', 'Logarithms', 'Algebraic Expressions and Formulas', 'Factorization', 'Algebraic Manipulation', 'Linear Equations and Inequalities', 'Linear Graphs and Their Application', 'Introduction to Coordinate Geometry'],
+    '9': ['Real Numbers', 'Logarithms', 'Sets and Relations', 'Factorization and Algebraic Manipulation', 'Linear Equations and Inequalities', 'Trigonometry and Bearing', 'Coordinate Geometry', 'Geometry of Straight Lines', 'Geometry and Polygons', 'Practical Geometry', 'Basic Statistics'],
     '10': ['Complex Numbers', 'Quadratic Equations', 'Matrices and Determinants', 'Linear and Quadratic Inequalities', 'Algebraic Fractions', 'Functions and Graphs', 'Vectors in Plane', 'Application of Trigonometry', 'Chords and Arcs of a Circle', 'Tangents and Angles of a Circle', 'Practical Geometry of Circles', 'Basic Statistics'],
   },
   computer: {
