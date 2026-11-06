@@ -93,11 +93,3 @@ export const DEMO_VIDEOS = [
   { title: 'Physical quantities: base vs derived', youtubeUrl: 'https://www.youtube.com/results?search_query=physical+quantities+class+9+fbise', duration: '18:42' },
   { title: 'SI units, prefixes and scientific notation', youtubeUrl: 'https://www.youtube.com/results?search_query=si+units+prefixes+class+9', duration: '22:10' },
 ];
-
-export const DEMO_STUDENTS = [
-  { name: 'Ayesha Khan', email: 'ayesha@student.pk', phone: '0300-1234567', classLevel: '9', status: 'approved' as const },
-  { name: 'Hamza Ali', email: 'hamza@student.pk', phone: '0321-7654321', classLevel: '10', status: 'approved' as const },
-  { name: 'Bilal Ahmed', email: 'bilal@student.pk', phone: '0345-9876543', classLevel: '9', status: 'pending' as const },
-  { name: 'Zainab Hussain', email: 'zainab@student.pk', phone: '0312-4567890', classLevel: '10', status: 'pending' as const },
-];
-export const DEMO_STUDENT_PASSWORD = 'Student@123';

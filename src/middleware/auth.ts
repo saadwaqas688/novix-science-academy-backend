@@ -38,6 +38,7 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
   if (!u) throw unauthorized();
   if (u.status === 'pending') throw forbidden('Your account is waiting for admin approval', 'PENDING');
   if (u.status === 'rejected') throw forbidden('Your account was not approved', 'REJECTED');
+  if (u.status === 'disabled') throw forbidden('Your account has been disabled by the academy. Please contact the admin.', 'DISABLED');
   req.user = u;
   next();
 }

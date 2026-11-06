@@ -124,13 +124,22 @@ const youtube = z.string().trim().regex(/^(https?:\/\/)?(www\.|m\.)?(youtube\.co
 r.put('/chapters/:id/videos', async (req, res) => {
   const id = idParam(req);
   const d = body(req, z.object({
-    videos: z.array(z.object({ title: z.string().trim().min(2).max(200), youtubeUrl: youtube, duration: z.string().trim().max(10).optional().nullable() })).max(50),
+    videos: z.array(z.object({ id: z.number().int().positive().optional(), title: z.string().trim().min(2).max(200), youtubeUrl: youtube, duration: z.string().trim().max(10).optional().nullable() })).max(50),
   }));
   if (!(await db.query.chapters.findFirst({ where: eq(chapters.id, id) }))) throw notFound('Chapter not found');
+  const fullUrl = (u: string) => (/^https?:/i.test(u) ? u : `https://${u}`);
+  // Keep the ids of existing lectures so students' "watched" records survive an edit.
   const list = await db.transaction(async (tx) => {
-    await tx.delete(videos).where(eq(videos.chapterId, id));
-    if (!d.videos.length) return [];
-    return tx.insert(videos).values(d.videos.map((v, i) => ({ chapterId: id, title: v.title, youtubeUrl: /^https?:/i.test(v.youtubeUrl) ? v.youtubeUrl : `https://${v.youtubeUrl}`, duration: v.duration || null, sortOrder: i }))).returning();
+    const existing = new Set((await tx.select({ id: videos.id }).from(videos).where(eq(videos.chapterId, id))).map((x) => x.id));
+    const keep = new Set(d.videos.map((v) => v.id).filter((x): x is number => !!x && existing.has(x)));
+    for (const old of existing) if (!keep.has(old)) await tx.delete(videos).where(eq(videos.id, old));
+    const out: (typeof videos.$inferSelect)[] = [];
+    for (const [i, v] of d.videos.entries()) {
+      const values = { chapterId: id, title: v.title, youtubeUrl: fullUrl(v.youtubeUrl), duration: v.duration || null, sortOrder: i };
+      if (v.id && keep.has(v.id)) out.push((await tx.update(videos).set(values).where(eq(videos.id, v.id)).returning())[0]);
+      else out.push((await tx.insert(videos).values(values).returning())[0]);
+    }
+    return out;
   });
   res.json({ videos: list });
 });

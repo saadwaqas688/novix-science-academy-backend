@@ -3,7 +3,7 @@ import {
 } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['student', 'admin']);
-export const userStatusEnum = pgEnum('user_status', ['pending', 'approved', 'rejected']);
+export const userStatusEnum = pgEnum('user_status', ['pending', 'approved', 'rejected', 'disabled']);
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -132,5 +132,22 @@ export const quizResults = pgTable('quiz_results', {
   durationSec: integer('duration_sec').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index('quiz_results_user_idx').on(t.userId), index('quiz_results_key_idx').on(t.quizKey)]);
+
+/** Time spent in the app: one row per visit, extended by heartbeats while the app is open on screen. */
+export const appSessions = pgTable('app_sessions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
+  activeSec: integer('active_sec').notNull().default(0),
+  device: text('device').notNull().default(''),
+}, (t) => [index('app_sessions_user_idx').on(t.userId, t.lastSeenAt)]);
+
+/** Lectures a student has watched (or marked as watched). */
+export const videoViews = pgTable('video_views', {
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  videoId: integer('video_id').notNull().references(() => videos.id, { onDelete: 'cascade' }),
+  watchedAt: timestamp('watched_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex('video_views_user_video_unique').on(t.userId, t.videoId)]);
 
 export type User = typeof users.$inferSelect;

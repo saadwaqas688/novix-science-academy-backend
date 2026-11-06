@@ -22,6 +22,6 @@ export const config = {
   },
   fileStorage: (process.env.FILE_STORAGE || 'disk').toLowerCase() as 'disk' | 'db',
   maxDbFileMb: Number(process.env.MAX_DB_FILE_MB || 30),
-  seedDemo: (process.env.SEED_DEMO_DATA || 'true').toLowerCase() === 'true',
+  seedDemo: (process.env.SEED_DEMO_DATA || 'false').toLowerCase() === 'true',
   isProd: process.env.NODE_ENV === 'production',
 };

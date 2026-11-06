@@ -4,7 +4,7 @@ import { db } from './index';
 import * as t from './schema';
 import { config } from '../config';
 import {
-  SUBJECTS, CHAPTERS, TEACHER, DEMO_ASSESSMENTS, DEMO_VIDEOS, DEMO_STUDENTS, DEMO_STUDENT_PASSWORD,
+  SUBJECTS, CHAPTERS, TEACHER, DEMO_ASSESSMENTS, DEMO_VIDEOS,
 } from './seed-data';
 
 /** Idempotent: safe to run on every start. Only inserts what is missing. */
@@ -56,20 +56,5 @@ export async function seed() {
     if (phy1) await db.insert(t.videos).values(DEMO_VIDEOS.map((v, i) => ({ chapterId: phy1, sortOrder: i, ...v })));
     console.log('Seeded demo assessments and videos');
   }
-
-  // 5. demo students + a few attempts for the first one
-  for (const s of DEMO_STUDENTS) {
-    const exists = await db.query.users.findFirst({ where: eq(t.users.email, s.email) });
-    if (exists) continue;
-    const [u] = await db.insert(t.users).values({ ...s, passwordHash: await bcrypt.hash(DEMO_STUDENT_PASSWORD, 10) }).returning();
-    if (s.email === 'ayesha@student.pk') {
-      const all = await db.select({ id: t.assessments.id }).from(t.assessments).orderBy(t.assessments.id);
-      const scores = [6, 7, 5, 8, 8, 7, 9, 10];
-      for (let i = 0; i < Math.min(scores.length, all.length * 2); i++) {
-        const a = all[i % all.length];
-        const created = new Date(Date.now() - (scores.length - i) * 3 * 86400000);
-        await db.insert(t.attempts).values({ userId: u.id, assessmentId: a.id, answers: Array(10).fill(null), score: scores[i], total: 10, durationSec: 300 + i * 20, createdAt: created });
-      }
-    }
-  }
+  // Demo students are no longer created: they re-appeared after every server restart.
 }

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 import { db } from '../db';
-import { assessments, attempts, books, chapters, notes, questions, quizResults, subjects, videos } from '../db/schema';
+import { appSessions, assessments, attempts, books, chapters, notes, questions, quizResults, subjects, videoViews, videos } from '../db/schema';
 import { badRequest, body, classLevel, forbidden, idParam, notFound } from '../lib/http';
 import { requireAuth } from '../middleware/auth';
 
@@ -35,8 +35,11 @@ r.get('/chapters/:id', async (req, res) => {
   if (!ch) throw notFound('Chapter not found');
   const s = await db.query.subjects.findFirst({ where: eq(subjects.id, ch.subjectId) });
   const note = await db.query.notes.findFirst({ where: eq(notes.chapterId, id) });
-  const vids = await db.select().from(videos).where(eq(videos.chapterId, id)).orderBy(asc(videos.sortOrder), asc(videos.id));
   const uid = req.user!.id;
+  const vids = await db.select({
+    id: videos.id, chapterId: videos.chapterId, title: videos.title, youtubeUrl: videos.youtubeUrl, duration: videos.duration, sortOrder: videos.sortOrder,
+    watched: sql<boolean>`exists(select 1 from video_views w where w.video_id = "videos"."id" and w.user_id = ${uid})`,
+  }).from(videos).where(eq(videos.chapterId, id)).orderBy(asc(videos.sortOrder), asc(videos.id));
   const tests = await db.select({
     id: assessments.id, topic: assessments.topic,
     questionCount: sql<number>`(select count(*)::int from questions q where q.assessment_id = "assessments"."id")`,
@@ -132,6 +135,40 @@ r.get('/me/progress', async (req, res) => {
     summary: { count: all.length, average: avg(all), bestSubject: best ? best.name : null, questionsAnswered: all.reduce((n, x) => n + x.total, 0) },
     bySubject,
   });
+});
+
+/**
+ * Time on app. The client calls this every minute while the app is open on screen and the
+ * student was active in the last 5 minutes. Gaps longer than 3 minutes start a new session.
+ */
+const GAP_SEC = 180;
+const MAX_STEP_SEC = 90;
+r.post('/me/heartbeat', async (req, res) => {
+  const d = body(req, z.object({ device: z.enum(['mobile', 'desktop']).catch('desktop').optional() }));
+  const uid = req.user!.id;
+  const [last] = await db.select().from(appSessions).where(eq(appSessions.userId, uid)).orderBy(desc(appSessions.lastSeenAt)).limit(1);
+  const now = new Date();
+  const gap = last ? (now.getTime() - last.lastSeenAt.getTime()) / 1000 : Infinity;
+  if (last && gap <= GAP_SEC) {
+    const add = Math.max(0, Math.min(MAX_STEP_SEC, Math.round(gap)));
+    await db.update(appSessions).set({ lastSeenAt: now, activeSec: sql`${appSessions.activeSec} + ${add}` }).where(eq(appSessions.id, last.id));
+  } else {
+    await db.insert(appSessions).values({ userId: uid, startedAt: now, lastSeenAt: now, activeSec: 0, device: d.device ?? 'desktop' });
+  }
+  res.status(204).end();
+});
+
+/** Mark a lecture as watched / not watched. */
+r.post('/me/videos/:id/watched', async (req, res) => {
+  const vid = idParam(req);
+  const v = await db.query.videos.findFirst({ where: eq(videos.id, vid) });
+  if (!v) throw notFound('Video not found');
+  await db.insert(videoViews).values({ userId: req.user!.id, videoId: vid }).onConflictDoNothing();
+  res.status(204).end();
+});
+r.delete('/me/videos/:id/watched', async (req, res) => {
+  await db.delete(videoViews).where(and(eq(videoViews.userId, req.user!.id), eq(videoViews.videoId, idParam(req))));
+  res.status(204).end();
 });
 
 export default r;

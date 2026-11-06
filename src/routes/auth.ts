@@ -33,6 +33,7 @@ r.post('/login', async (req, res) => {
   if (!u || !(await bcrypt.compare(d.password, u.passwordHash))) throw new HttpError(401, 'Wrong email or password', 'INVALID_CREDENTIALS');
   if (u.status === 'pending') throw forbidden('Your account is waiting for admin approval. Please try again later.', 'PENDING');
   if (u.status === 'rejected') throw forbidden('Your account request was not approved. Please contact the academy.', 'REJECTED');
+  if (u.status === 'disabled') throw forbidden('Your account has been disabled by the academy. Please contact the admin.', 'DISABLED');
   res.json({ token: signToken(u), user: publicUser(u) });
 });
 
