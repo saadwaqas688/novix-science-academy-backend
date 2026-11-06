@@ -15,7 +15,7 @@ export const CHAPTERS: Record<string, Record<string, string[]>> = {
   },
   chemistry: {
     '9': ['Fundamentals of Chemistry', 'Structure of Atoms', 'Periodic Table and Periodicity of Properties', 'Structure of Molecules', 'Physical States of Matter', 'Solutions', 'Electrochemistry', 'Chemical Reactivity'],
-    '10': ['Chemical Equilibrium', 'Acids, Bases and Salts', 'Organic Chemistry', 'Hydrocarbons', 'Biochemistry', 'The Atmosphere', 'Water', 'Chemical Industries'],
+    '10': ['History of Chemistry', 'Matter', 'Stoichiometry', 'Electrochemistry', 'Reaction Kinetics', 'Salts', 'Nitrogen, Sulphur and Metals', 'Organic Chemistry', 'Hydrocarbons', 'Hydroxy Compounds', 'Carboxylic Compounds', 'Polymers', 'Biochemistry'],
   },
   math: {
     '9': ['Real Numbers', 'Logarithms', 'Sets and Relations', 'Factorization and Algebraic Manipulation', 'Linear Equations and Inequalities', 'Trigonometry and Bearing', 'Coordinate Geometry', 'Geometry of Straight Lines', 'Geometry and Polygons', 'Practical Geometry', 'Basic Statistics'],
