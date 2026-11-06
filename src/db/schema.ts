@@ -1,5 +1,5 @@
 import {
-  customType, pgTable, pgEnum, serial, integer, text, timestamp, boolean, jsonb, uniqueIndex, index,
+  customType, pgTable, pgEnum, serial, integer, text, timestamp, boolean, jsonb, uniqueIndex, index, date,
 } from 'drizzle-orm/pg-core';
 
 export const roleEnum = pgEnum('role', ['student', 'admin']);
@@ -149,5 +149,22 @@ export const videoViews = pgTable('video_views', {
   videoId: integer('video_id').notNull().references(() => videos.id, { onDelete: 'cascade' }),
   watchedAt: timestamp('watched_at', { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex('video_views_user_video_unique').on(t.userId, t.videoId)]);
+
+/* ---------- Attendance (separate register; NOT linked to app accounts) ---------- */
+export const attendanceStatusEnum = pgEnum('attendance_status', ['present', 'absent', 'leave']);
+
+export const attendanceStudents = pgTable('attendance_students', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  nameKey: text('name_key').notNull(),
+  groupName: text('group_name').notNull().default(''),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex('attendance_students_name_key_unique').on(t.nameKey)]);
+
+export const attendanceRecords = pgTable('attendance_records', {
+  studentId: integer('student_id').notNull().references(() => attendanceStudents.id, { onDelete: 'cascade' }),
+  date: date('date', { mode: 'string' }).notNull(),
+  status: attendanceStatusEnum('status').notNull(),
+}, (t) => [uniqueIndex('attendance_records_student_date_unique').on(t.studentId, t.date), index('attendance_records_date_idx').on(t.date)]);
 
 export type User = typeof users.$inferSelect;

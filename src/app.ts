@@ -16,13 +16,16 @@ import adminUsers from './routes/admin/users';
 import adminContent from './routes/admin/content';
 import adminAssessments from './routes/admin/assessments';
 import adminStats from './routes/admin/stats';
+import adminAttendance from './routes/admin/attendance';
 
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
   app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
   app.use(cors({ origin: config.corsOrigin, credentials: false }));
-  app.use(express.json({ limit: '1mb' }));
+  const jsonSmall = express.json({ limit: '1mb' });
+  const jsonLarge = express.json({ limit: '15mb' }); // bulk attendance imports
+  app.use((req, res, next) => (req.path.startsWith('/api/admin/attendance') ? jsonLarge : jsonSmall)(req, res, next));
   if (!config.isProd || process.env.LOG_REQUESTS) app.use(morgan('dev'));
 
   // uploaded PDFs and photos
@@ -54,6 +57,7 @@ export function createApp() {
   admin.use(requireAdmin);
   admin.use('/users', adminUsers);
   admin.use('/assessments', adminAssessments);
+  admin.use('/attendance', adminAttendance);
   admin.use('/', adminContent);
   admin.use('/', adminStats);
   api.use('/admin', admin);
