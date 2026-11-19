@@ -11,7 +11,7 @@ export const SUBJECTS = [
 export const CHAPTERS: Record<string, Record<string, string[]>> = {
   physics: {
     '9': ['Physical Quantities and Measurement', 'Kinematics', 'Dynamics-I', 'Dynamics-II', 'Pressure and Deformation in Solids', 'Work and Energy', 'Density and Temperature', 'Magnetism', 'Nature of Science and Physics'],
-    '10': ['Simple Harmonic Motion and Waves', 'Sound', 'Geometrical Optics', 'Electrostatics', 'Current Electricity', 'Electromagnetism', 'Basic Electronics', 'Information and Communication Technology', 'Atomic and Nuclear Physics'],
+    '10': ['Heat Capacity and Modes of Heat Transfer', 'Thermal Expansion and Change of State', 'Waves', 'Sound', 'Optics', 'Electrostatics', 'Current Electricity', 'Electric Circuits', 'Electronics', 'Electromagnetism', 'Electromagnetic Waves', 'Nuclear Physics'],
   },
   chemistry: {
     '9': ['Fundamentals of Chemistry', 'Structure of Atoms', 'Periodic Table and Periodicity of Properties', 'Structure of Molecules', 'Physical States of Matter', 'Solutions', 'Electrochemistry', 'Chemical Reactivity'],
