@@ -22,7 +22,7 @@ export const CHAPTERS: Record<string, Record<string, string[]>> = {
     '10': ['Complex Numbers', 'Quadratic Equations', 'Matrices and Determinants', 'Linear and Quadratic Inequalities', 'Algebraic Fractions', 'Functions and Graphs', 'Vectors in Plane', 'Application of Trigonometry', 'Chords and Arcs of a Circle', 'Tangents and Angles of a Circle', 'Practical Geometry of Circles', 'Basic Statistics'],
   },
   computer: {
-    '9': ['Fundamentals of Computer', 'Fundamentals of Operating System', 'Office Automation', 'Data Communication and Computer Networks', 'Computer Security and Ethics', 'Web Development with HTML'],
+    '9': ['Computer Systems', 'Computational Thinking and Algorithms', 'Programming Fundamentals', 'Data and Analysis', 'Applications of Computer Science', 'Impacts of Computing', 'Entrepreneurship'],
     '10': ['Introduction to Programming', 'User Interaction', 'Conditional Logic', 'Data and Repetition', 'Functions'],
   },
 };
