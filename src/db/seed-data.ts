@@ -14,7 +14,7 @@ export const CHAPTERS: Record<string, Record<string, string[]>> = {
     '10': ['Heat Capacity and Modes of Heat Transfer', 'Thermal Expansion and Change of State', 'Waves', 'Sound', 'Optics', 'Electrostatics', 'Current Electricity', 'Electric Circuits', 'Electronics', 'Electromagnetism', 'Electromagnetic Waves', 'Nuclear Physics'],
   },
   chemistry: {
-    '9': ['Fundamentals of Chemistry', 'Structure of Atoms', 'Periodic Table and Periodicity of Properties', 'Structure of Molecules', 'Physical States of Matter', 'Solutions', 'Electrochemistry', 'Chemical Reactivity'],
+    '9': ['Nature of Science in Chemistry', 'Matter', 'Atomic Structure', 'Periodic Table and Periodicity of Properties', 'Chemical Bonding', 'Stoichiometry', 'Electrochemistry', 'Energetics', 'Chemical Equilibrium', 'Acids, Bases and Salts', 'Environmental Chemistry - Air', 'Environmental Chemistry - Water', 'Organic Chemistry', 'Hydrocarbons', 'Biochemistry', 'Empirical Data Collection and Analysis', 'Separation Techniques', 'Qualitative Analysis', 'Chromatography'],
     '10': ['History of Chemistry', 'Matter', 'Stoichiometry', 'Electrochemistry', 'Reaction Kinetics', 'Salts', 'Nitrogen, Sulphur and Metals', 'Organic Chemistry', 'Hydrocarbons', 'Hydroxy Compounds', 'Carboxylic Compounds', 'Polymers', 'Biochemistry'],
   },
   math: {
