@@ -10,7 +10,7 @@ import { requireAuth } from '../middleware/auth';
 const r = Router();
 r.use(requireAuth);
 
-const COLORS = ['yellow', 'green', 'blue', 'pink'] as const;
+const COLORS = ['yellow', 'green', 'blue', 'pink', 'orange', 'purple', 'red', 'teal'] as const;
 const fileUrl = z.string().trim().min(5).max(300).regex(/^\/[\w\-./]+\.pdf$/i, 'Invalid file');
 const MAX_PER_FILE = 500;
 
