@@ -168,3 +168,16 @@ export const attendanceRecords = pgTable('attendance_records', {
 }, (t) => [uniqueIndex('attendance_records_student_date_unique').on(t.studentId, t.date), index('attendance_records_date_idx').on(t.date)]);
 
 export type User = typeof users.$inferSelect;
+
+/** A student's highlight on a notes PDF. Rects are fractions (0..1) of the page width/height. */
+export type HighlightRect = { x: number; y: number; w: number; h: number };
+export const noteHighlights = pgTable('note_highlights', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  fileUrl: text('file_url').notNull(),
+  page: integer('page').notNull(),
+  rects: jsonb('rects').$type<HighlightRect[]>().notNull(),
+  text: text('text').notNull().default(''),
+  color: text('color').notNull().default('yellow'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index('note_highlights_user_file_idx').on(t.userId, t.fileUrl)]);
